@@ -392,12 +392,10 @@
             editingBookmarkId = id;
             
             // Populate dropdown
-            editSelect.innerHTML = '<option value="NEW">-- Create New Category --</option>';
+            // THIS IS THE CORRECTED CODE:
+            select.innerHTML = '<option value="NEW">-- Create New Category --</option>';
             const existingCats = [...new Set(allBookmarks.map(b => b.Category).filter(Boolean))];
-            existingCats.forEach(cat => { 
-                const selected = cat === currentCategory ? 'selected' : '';
-                editSelect.innerHTML += `<option value="${cat}" ${selected}>${cat}</option>`; 
-            });
+            existingCats.forEach(cat => { select.innerHTML += `<option value="${cat}">${cat}</option>`; });
             
             editInput.style.display = 'none'; 
             editInput.value = '';
@@ -443,7 +441,9 @@
                     document.getElementById('modalSubtitle').innerText = `Found ${pendingUploadData.length} bookmarks.`;
                     
                     select.innerHTML = '<option value="NEW">-- Create New Category --</option>';
-                    const existingCats = [...new filterAndRender(allBookmarks.map(b => b.Category).filter(Boolean))];
+                    // FIXED CODE
+                    const existingCats = [...new Set(allBookmarks.map(b => b.Category).filter(Boolean))];
+                    
                     existingCats.forEach(cat => { select.innerHTML += `<option value="${cat}">${cat}</option>`; });
                     
                     input.style.display = 'block'; 
