@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MainView: View {
-    @StateObject private var viewModel = BookmarksViewModel()
+    @State private var viewModel = BookmarksViewModel()
     @State private var showingFilters = false
     @State private var selectedURL: URL?
 
@@ -39,9 +39,10 @@ struct MainView: View {
 
                         // Category Tabs
                         if !viewModel.categories.isEmpty {
+                            @Bindable var bindableVM = viewModel
                             CategoryTabs(
                                 categories: viewModel.categories,
-                                selectedCategory: $viewModel.selectedCategory
+                                selectedCategory: $bindableVM.selectedCategory
                             )
                         }
 
@@ -84,7 +85,7 @@ struct MainView: View {
                 .refreshable {
                     await viewModel.fetchBookmarks()
                 }
-                .searchable(text: $viewModel.searchText, prompt: "Search ideas, authors...")
+                .searchable(text: Bindable(viewModel).searchText, prompt: "Search ideas, authors...")
                 .navigationTitle("Bookmarks")
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -95,10 +96,11 @@ struct MainView: View {
                     }
                 }
                 .sheet(isPresented: $showingFilters) {
+                    @Bindable var bindableVM = viewModel
                     FilterSheet(
-                        sortOption: $viewModel.sortOption,
-                        startDate: $viewModel.startDate,
-                        endDate: $viewModel.endDate
+                        sortOption: $bindableVM.sortOption,
+                        startDate: $bindableVM.startDate,
+                        endDate: $bindableVM.endDate
                     )
                 }
                 .sheet(item: Binding<URLWrapper>(
@@ -151,7 +153,7 @@ struct MainView: View {
 
 // Helper for sheet presentation
 struct URLWrapper: Identifiable {
-    let id = UUID()
+    var id: String { url.absoluteString }
     let url: URL
 }
 

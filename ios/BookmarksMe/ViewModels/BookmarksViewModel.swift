@@ -1,5 +1,4 @@
 import Foundation
-import Combine
 import SwiftUI
 
 enum SortOption: String, CaseIterable, Identifiable {
@@ -12,24 +11,54 @@ enum SortOption: String, CaseIterable, Identifiable {
 }
 
 @MainActor
-class BookmarksViewModel: ObservableObject {
-    @Published var allBookmarks: [Bookmark] = []
-    @Published var filteredBookmarks: [Bookmark] = []
+@Observable
+class BookmarksViewModel {
+    var allBookmarks: [Bookmark] = []
+    var filteredBookmarks: [Bookmark] = []
 
-    @Published var searchText: String = ""
-    @Published var selectedCategory: String = "All"
-    @Published var sortOption: SortOption = .newest
+    var searchText: String = "" {
+        didSet {
+            // Cancel any previous debounce task
+            searchTask?.cancel()
+            searchTask = Task {
+                // Debounce logic
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                guard !Task.isCancelled else { return }
+                self.applyFiltersAndSort()
+            }
+        }
+    }
+    private var searchTask: Task<Void, Never>?
 
-    @Published var startDate: Date?
-    @Published var endDate: Date?
+    var selectedCategory: String = "All" {
+        didSet {
+            applyFiltersAndSort()
+        }
+    }
+    var sortOption: SortOption = .newest {
+        didSet {
+            applyFiltersAndSort()
+        }
+    }
 
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
+    var startDate: Date? {
+        didSet {
+            applyFiltersAndSort()
+        }
+    }
+    var endDate: Date? {
+        didSet {
+            applyFiltersAndSort()
+        }
+    }
+
+    var isLoading: Bool = false
+    var errorMessage: String? = nil
 
     // Toast state
-    @Published var toastMessage: String? = nil
-    @Published var showToast: Bool = false
-    private var toastTimer: Timer?
+    var toastMessage: String? = nil
+    var showToast: Bool = false
+    @ObservationIgnored private var toastTimer: Timer?
 
     var categories: [String] {
         let cats = Set(allBookmarks.compactMap { $0.category }).sorted()
@@ -41,11 +70,7 @@ class BookmarksViewModel: ObservableObject {
         return allBookmarks.randomElement()
     }
 
-    private var cancellables = Set<AnyCancellable>()
-
-    init() {
-        setupBindings()
-    }
+    init() {}
 
     func fetchBookmarks() async {
         isLoading = true
@@ -173,52 +198,5 @@ class BookmarksViewModel: ObservableObject {
         }
 
         self.filteredBookmarks = result
-    }
-
-    private func setupBindings() {
-        $searchText
-            .dropFirst()
-            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.applyFiltersAndSort()
-            }
-            .store(in: &cancellables)
-
-        $selectedCategory
-            .dropFirst()
-            .sink { [weak self] _ in
-                // Need a small delay to let the state update before filtering
-                DispatchQueue.main.async {
-                    self?.applyFiltersAndSort()
-                }
-            }
-            .store(in: &cancellables)
-
-        $sortOption
-            .dropFirst()
-            .sink { [weak self] _ in
-                DispatchQueue.main.async {
-                    self?.applyFiltersAndSort()
-                }
-            }
-            .store(in: &cancellables)
-
-        $startDate
-            .dropFirst()
-            .sink { [weak self] _ in
-                DispatchQueue.main.async {
-                    self?.applyFiltersAndSort()
-                }
-            }
-            .store(in: &cancellables)
-
-        $endDate
-            .dropFirst()
-            .sink { [weak self] _ in
-                DispatchQueue.main.async {
-                    self?.applyFiltersAndSort()
-                }
-            }
-            .store(in: &cancellables)
     }
 }
