@@ -101,7 +101,7 @@ struct MainView: View {
                         endDate: $viewModel.endDate
                     )
                 }
-                .sheet(item: Binding<URLWrapper>(
+                .sheet(item: Binding<URLWrapper?>(
                     get: { selectedURL.map { URLWrapper(url: $0) } },
                     set: { selectedURL = $0?.url }
                 )) { wrapper in

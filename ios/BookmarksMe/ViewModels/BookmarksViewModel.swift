@@ -36,11 +36,7 @@ class BookmarksViewModel: ObservableObject {
         return ["All"] + cats
     }
 
-    var featuredBookmark: Bookmark? {
-        guard !allBookmarks.isEmpty else { return nil }
-        return allBookmarks.randomElement()
-    }
-
+    @Published var featuredBookmark: Bookmark? 
     private var cancellables = Set<AnyCancellable>()
 
     init() {
@@ -54,6 +50,7 @@ class BookmarksViewModel: ObservableObject {
             let bookmarks = try await NetworkService.shared.fetchBookmarks()
             self.allBookmarks = bookmarks
             self.applyFiltersAndSort()
+            self.featuredBookmark = allBookmarks.randomElement()
         } catch {
             self.errorMessage = "Failed to load bookmarks. Please try again."
         }
