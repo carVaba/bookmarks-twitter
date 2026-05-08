@@ -71,7 +71,7 @@ class BookmarksViewModel {
     }
 
     init() {}
-
+   
     func fetchBookmarks() async {
         isLoading = true
         errorMessage = nil
@@ -79,6 +79,7 @@ class BookmarksViewModel {
             let bookmarks = try await NetworkService.shared.fetchBookmarks()
             self.allBookmarks = bookmarks
             self.applyFiltersAndSort()
+            self.featuredBookmark = allBookmarks.randomElement()
         } catch {
             self.errorMessage = "Failed to load bookmarks. Please try again."
         }
