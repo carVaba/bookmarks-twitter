@@ -157,9 +157,9 @@ struct EditCategorySheet: View {
                         }
                     }
                     .pickerStyle(.inline)
-                    .onChange(of: selectedCategory) { _ in
+                    .onChange(of: selectedCategory, {
                         isCreatingNew = false
-                    }
+                    })
                 }
 
                 Section(header: Text("Or Create New")) {

@@ -65,10 +65,7 @@ class BookmarksViewModel {
         return ["All"] + cats
     }
 
-    var featuredBookmark: Bookmark? {
-        guard !allBookmarks.isEmpty else { return nil }
-        return allBookmarks.randomElement()
-    }
+    var featuredBookmark: Bookmark?
 
     init() {}
    
